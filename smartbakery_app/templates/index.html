@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartBakery AI - Prévision Anti-Gaspillage</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #e67e22;
+            --primary-dark: #d35400;
+            --secondary: #2c3e50;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
+            --light: #f8f9fa;
+            --dark: #1a1a2e;
+            --card-bg: #ffffff;
+            --body-bg: #f0f2f5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--body-bg);
+            color: var(--secondary);
+            overflow-x: hidden;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--secondary) 100%);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: #fff !important;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .navbar-brand i {
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.85) !important;
+            font-weight: 500;
+            padding: 0.5rem 1.2rem !important;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #fff !important;
+            background: rgba(230, 126, 34, 0.2);
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, var(--dark) 0%, #16213e 50%, var(--secondary) 100%);
+            color: white;
+            padding: 5rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(230,126,34,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .hero-title {
+            font-size: 3.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero-title span {
+            color: var(--primary);
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .hero-stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .hero-image {
+            position: relative;
+        }
+
+        .hero-image img {
+            max-width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+        }
+
+        /* Cards */
+        .dashboard-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 1.8rem;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+            border: none;
+            transition: all 0.3s ease;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+        }
+
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--warning));
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .card-icon.orange { background: rgba(230,126,34,0.1); color: var(--primary); }
+        .card-icon.green { background: rgba(39,174,96,0.1); color: var(--success); }
+        .card-icon.blue { background: rgba(52,152,219,0.1); color: var(--info); }
+        .card-icon.red { background: rgba(231,76,60,0.1); color: var(--danger); }
+        .card-icon.purple { background: rgba(155,89,182,0.1); color: #9b59b6; }
+
+        .card-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+
+        .card-label {
+            color: #6c757d;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .card-change {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .card-change.positive {
+            background: rgba(39,174,96,0.1);
+            color: var(--success);
+        }
+
+        .card-change.negative {
+            background: rgba(231,76,60,0.1);
+            color: var(--danger);
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+        }
+
+        .section-subtitle {
+            color: #6c757d;
+            margin-bottom: 2rem;
+        }
+
+        /* Prediction Module */
+        .prediction-box {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--secondary) 100%);
+            border-radius: 24px;
+            padding: 3rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .prediction-box::after {
+            content: '';
+            position: absolute;
+            bottom: -100px;
+            right: -100px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(230,126,34,0.2) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .prediction-input {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            padding: 1rem 1.5rem;
+            color: white;
+            font-size: 1.1rem;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .prediction-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255,255,255,0.15);
+        }
+
+        .prediction-input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        .btn-predict {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: 16px;
+            padding: 1rem 2.5rem;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(230,126,34,0.3);
+        }
+
+        .btn-predict:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(230,126,34,0.4);
+            color: white;
+        }
+
+        .prediction-result {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .prediction-result-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Anti-Waste Module */
+        .waste-comparison {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .waste-card {
+            background: white;
+            border-radius: 24px;
+            padding: 2.5rem;
+            text-align: center;
+            width: 280px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            position: relative;
+        }
+
+        .waste-card.before {
+            border-top: 5px solid var(--danger);
+        }
+
+        .waste-card.after {
+            border-top: 5px solid var(--success);
+        }
+
+        .waste-card h4 {
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .waste-metric {
+            margin: 1rem 0;
+        }
+
+        .waste-metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .waste-metric-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .waste-arrow {
+            font-size: 3rem;
+            color: var(--success);
+        }
+
+        .waste-savings {
+            background: linear-gradient(135deg, var(--success) 0%, #2ecc71 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 2rem 3rem;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .waste-savings-value {
+            font-size: 3.5rem;
+            font-weight: 700;
+        }
+
+        /* Economic Module */
+        .eco-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+            transition: all 0.3s ease;
+        }
+
+        .eco-card:hover {
+            transform: scale(1.03);
+        }
+
+        .eco-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        .eco-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .eco-label {
+            color: #6c757d;
+            margin-top: 0.5rem;
+        }
+
+        /* Top Products */
+        .product-rank {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .product-rank:hover {
+            transform: translateX(10px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .rank-number {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-right: 1.5rem;
+        }
+
+        .rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: white; }
+        .rank-2 { background: linear-gradient(135deg, #C0C0C0, #A0A0A0); color: white; }
+        .rank-3 { background: linear-gradient(135deg, #CD7F32, #B87333); color: white; }
+        .rank-other { background: #f0f2f5; color: var(--secondary); }
+
+        .product-info {
+            flex: 1;
+        }
+
+        .product-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .product-bar {
+            height: 8px;
+            background: #f0f2f5;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .product-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--warning));
+            transition: width 1s ease;
+        }
+
+        .product-qty {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--primary);
+            margin-left: 1rem;
+        }
+
+        /* Charts Container */
+        .chart-container {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--dark);
+            color: white;
+            padding: 3rem 0 1.5rem;
+            margin-top: 4rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2.2rem; }
+            .hero-stats { flex-direction: column; gap: 1rem; }
+            .waste-comparison { flex-direction: column; }
+            .prediction-box { padding: 2rem 1.5rem; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        /* Loading Spinner */
+        .spinner-custom {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Server status indicator */
+        .server-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 1000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .server-status.online {
+            background: rgba(39, 174, 96, 0.9);
+            color: white;
+        }
+
+        .server-status.offline {
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+        }
+
+        .server-status.checking {
+            background: rgba(243, 156, 18, 0.9);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Server Status Indicator -->
+    <div id="serverStatus" class="server-status checking">
+        <i class="fas fa-circle-notch fa-spin"></i> Connexion serveur...
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-bread-slice"></i>
+                SmartBakery AI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="#home">Accueil</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#prediction">Prédiction</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#visualizations">Graphiques</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#antiwaste">Anti-Gaspillage</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#economy">Économie</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section" style="padding-top: 100px;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="hero-title animate-fade-in">
+                        Produisez juste ce qu'il faut,<br><span>zéro gaspillage</span>
+                    </h1>
+                    <p class="hero-subtitle animate-fade-in delay-1">
+                        SmartBakery AI utilise l'intelligence artificielle pour prédire vos ventes quotidiennes et optimiser votre production. Réduisez le gaspillage, maximisez vos profits.
+                    </p>
+                    <div class="d-flex gap-3 animate-fade-in delay-2">
+                        <a href="#prediction" class="btn btn-predict">
+                            <i class="fas fa-magic me-2"></i>Faire une prédiction
+                        </a>
+                        <a href="#dashboard" class="btn btn-outline-light rounded-pill px-4">
+                            Voir le Dashboard
+                        </a>
+                    </div>
+                    <div class="hero-stats animate-fade-in delay-3">
+                        <div class="hero-stat">
+                            <div class="hero-stat-number" id="stat-waste">75%</div>
+                            <div class="hero-stat-label">Gaspillage évité</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-number" id="stat-economy">9K</div>
+                            <div class="hero-stat-label">DH économisés/mois</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-number" id="stat-accuracy">94%</div>
+                            <div class="hero-stat-label">Précision IA</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 d-none d-lg-block">
+                    <div class="hero-image animate-fade-in delay-2">
+                        <div style="background: linear-gradient(135deg, rgba(230,126,34,0.2), rgba(44,62,80,0.3)); border-radius: 24px; padding: 2rem;">
+                            <canvas id="heroChart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Section -->
+    <section id="dashboard" class="py-5" style="margin-top: 2rem;">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">Dashboard Principal</h2>
+                <p class="section-subtitle">Vue d'ensemble de vos performances en temps réel</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="dashboard-card animate-fade-in">
+                        <div class="card-icon orange">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="card-value" id="today-sales">420</div>
+                        <div class="card-label">Ventes du jour (unités)</div>
+                        <div class="card-change positive">
+                            <i class="fas fa-arrow-up"></i> +5.2% vs hier
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="dashboard-card animate-fade-in delay-1">
+                        <div class="card-icon blue">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="card-value" id="tomorrow-forecast">450</div>
+                        <div class="card-label">Prévision demain (unités)</div>
+                        <div class="card-change positive">
+                            <i class="fas fa-arrow-up"></i> +7.1% tendance haussière
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="dashboard-card animate-fade-in delay-2">
+                        <div class="card-icon green">
+                            <i class="fas fa-bread-slice"></i>
+                        </div>
+                        <div class="card-value" id="recommended-prod">473</div>
+                        <div class="card-label">Production recommandée</div>
+                        <div class="card-change positive">
+                            <i class="fas fa-shield-alt"></i> Marge 5% incluse
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="dashboard-card animate-fade-in delay-3">
+                        <div class="card-icon purple">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <div class="card-value" id="waste-saved">80%</div>
+                        <div class="card-label">Gaspillage évité</div>
+                        <div class="card-change positive">
+                            <i class="fas fa-check-circle"></i> Objectif atteint
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Prediction Module -->
+    <section id="prediction" class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">Module de Prédiction</h2>
+                <p class="section-subtitle">Sélectionnez une date pour obtenir la prévision de ventes et la recommandation de production</p>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="prediction-box text-center">
+                        <h3 class="mb-4"><i class="fas fa-brain me-2"></i>Prédiction</h3>
+                        <div class="row justify-content-center align-items-end g-3">
+                            <div class="col-md-6">
+                                <label class="d-block text-start mb-2 opacity-75">Date de prédiction</label>
+                                <input type="date" class="prediction-input" id="prediction-date">
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-predict w-100" id="btn-predict" onclick="makePrediction()">
+                                    <i class="fas fa-magic me-2"></i>Prédire
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="prediction-result" class="prediction-result" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <i class="fas fa-chart-bar fa-2x mb-2 opacity-75"></i>
+                                        <div class="text-uppercase opacity-75" style="font-size: 0.85rem;">Ventes Prévues</div>
+                                        <div class="prediction-result-value" id="pred-sales">--</div>
+                                        <div class="opacity-75">unités</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <i class="fas fa-percentage fa-2x mb-2 opacity-75"></i>
+                                        <div class="text-uppercase opacity-75" style="font-size: 0.85rem;">Marge de Sécurité</div>
+                                        <div class="prediction-result-value" style="color: #2ecc71;">5%</div>
+                                        <div class="opacity-75">configurable</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <i class="fas fa-bread-slice fa-2x mb-2 opacity-75"></i>
+                                        <div class="text-uppercase opacity-75" style="font-size: 0.85rem;">Production Recommandée</div>
+                                        <div class="prediction-result-value" id="pred-production" style="color: #f39c12;">--</div>
+                                        <div class="opacity-75">unités</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3 p-3 rounded-3" style="background: rgba(46,204,113,0.15); border: 1px solid rgba(46,204,113,0.3);">
+                                <i class="fas fa-lightbulb me-2" style="color: #2ecc71;"></i>
+                                <span id="prediction-advice">Conseil : Production optimale calculée avec succès.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visualizations -->
+    <section id="visualizations" class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">Visualisations & Analyses</h2>
+                <p class="section-subtitle">Comprenez vos tendances de vente pour mieux décider</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="chart-container">
+                        <h5 class="mb-4 fw-bold"><i class="fas fa-chart-area me-2 text-primary"></i>Évolution des Ventes : Réelles vs Prédites</h5>
+                        <canvas id="salesEvolutionChart" height="120"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="chart-container">
+                        <h5 class="mb-4 fw-bold"><i class="fas fa-calendar-week me-2 text-primary"></i>Ventes par Jour de Semaine</h5>
+                        <canvas id="weekdayChart" height="200"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <h5 class="mb-4 fw-bold"><i class="fas fa-chart-bar me-2 text-primary"></i>Ventes Mensuelles</h5>
+                        <canvas id="monthlyChart" height="120"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <h5 class="mb-4 fw-bold"><i class="fas fa-wave-square me-2 text-primary"></i>Tendance & Saisonnalité</h5>
+                        <canvas id="trendChart" height="120"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Anti-Waste Module -->
+    <section id="antiwaste" class="py-5" style="background: linear-gradient(180deg, #f8f9fa 0%, #fff 100%);">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">Module Anti-Gaspillage</h2>
+                <p class="section-subtitle">L'impact concret de l'IA sur votre boulangerie</p>
+            </div>
+            <div class="waste-comparison">
+                <div class="waste-card before">
+                    <h4 class="text-danger"><i class="fas fa-times-circle me-2"></i>Avant l'IA</h4>
+                    <div class="waste-metric">
+                        <div class="waste-metric-value text-secondary">500</div>
+                        <div class="waste-metric-label">Production moyenne (unités)</div>
+                    </div>
+                    <div class="waste-metric">
+                        <div class="waste-metric-value text-success">420</div>
+                        <div class="waste-metric-label">Ventes réelles (unités)</div>
+                    </div>
+                    <div class="waste-metric">
+                        <div class="waste-metric-value text-danger">80</div>
+                        <div class="waste-metric-label">Gaspillage (unités)</div>
+                    </div>
+                    <div class="mt-3">
+                        <span class="badge bg-danger fs-6">Taux : 16%</span>
+                    </div>
+                </div>
+
+                <div class="waste-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+
+                <div class="waste-card after">
+                    <h4 class="text-success"><i class="fas fa-check-circle me-2"></i>Après l'IA</h4>
+                    <div class="waste-metric">
+                        <div class="waste-metric-value text-secondary">440</div>
+                        <div class="waste-metric-label">Production optimisée (unités)</div>
+                    </div>
+                    <div class="waste-metric">
+                        <div class="waste-metric-value text-success">420</div>
+                        <div class="waste-metric-label">Ventes réelles (unités)</div>
+                    </div>
+                    <div class="waste-metric">
+                        <div class="waste-metric-value text-success">20</div>
+                        <div class="waste-metric-label">Gaspillage (unités)</div>
+                    </div>
+                    <div class="mt-3">
+                        <span class="badge bg-success fs-6">Taux : 4.5%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <div class="waste-savings">
+                        <i class="fas fa-trophy fa-3x mb-3"></i>
+                        <div class="waste-savings-value">75%</div>
+                        <div class="fs-4 fw-semibold">de réduction du gaspillage</div>
+                        <div class="mt-3 opacity-75">
+                            <i class="fas fa-leaf me-2"></i>
+                            Équivalent à <strong>60 unités</strong> sauvées chaque jour
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Economic Module -->
+    <section id="economy" class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">Module Économique</h2>
+                <p class="section-subtitle">Les bénéfices financiers de l'optimisation IA</p>
+            </div>
+            <div class="row g-4 justify-content-center">
+                <div class="col-md-6 col-lg-4">
+                    <div class="eco-card">
+                        <div class="eco-icon" style="background: rgba(230,126,34,0.1); color: var(--primary);">
+                            <i class="fas fa-weight-hanging"></i>
+                        </div>
+                        <div class="eco-value">10 kg</div>
+                        <div class="eco-label">Produits sauvés par jour</div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="eco-card">
+                        <div class="eco-icon" style="background: rgba(39,174,96,0.1); color: var(--success);">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div class="eco-value">300 DH</div>
+                        <div class="eco-label">Économie estimée / jour</div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="eco-card">
+                        <div class="eco-icon" style="background: rgba(52,152,219,0.1); color: var(--info);">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="eco-value">9,000 DH</div>
+                        <div class="eco-label">Économie mensuelle</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="chart-container">
+                        <h5 class="mb-4 fw-bold"><i class="fas fa-chart-line me-2 text-primary"></i>Évolution des Économies (DH)</h5>
+                        <canvas id="savingsChart" height="80"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Top Products -->
+    <section id="products" class="py-5" style="background: linear-gradient(180deg, #fff 0%, #f8f9fa 100%);">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">Top Produits</h2>
+                <p class="section-subtitle">Les produits les plus vendus de votre boulangerie</p>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div id="products-list">
+                        <!-- Products will be inserted by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h4 class="fw-bold mb-3"><i class="fas fa-bread-slice me-2" style="color: var(--primary);"></i>SmartBakery AI</h4>
+                    <p class="opacity-75">Solution intelligente de prévision des ventes pour boulangeries. Réduisez le gaspillage, maximisez vos profits avec le Machine Learning.</p>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <h5 class="fw-bold mb-3">Fonctionnalités</h5>
+                    <ul class="list-unstyled opacity-75">
+                        <li class="mb-2"><i class="fas fa-check me-2" style="color: var(--primary);"></i>Prédiction LightGBM</li>
+                        <li class="mb-2"><i class="fas fa-check me-2" style="color: var(--primary);"></i>Recommandation de production</li>
+                        <li class="mb-2"><i class="fas fa-check me-2" style="color: var(--primary);"></i>Dashboard temps réel</li>
+                        <li class="mb-2"><i class="fas fa-check me-2" style="color: var(--primary);"></i>Analyse anti-gaspillage</li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <h5 class="fw-bold mb-3">Dataset</h5>
+                    <p class="opacity-75 mb-2"><strong>sales_daily.csv</strong></p>
+                    
+                </div>
+            </div>
+            <hr class="my-4" style="border-color: rgba(255,255,255,0.1);">
+            <div class="text-center opacity-50">
+                <small>© 2026 SmartBakery AI. Propulsé par LightGBM</small>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ============================================
+        // DONNÉES SIMULÉES POUR LES GRAPHIQUES
+        // ============================================
+
+        // Données de ventes simulées sur 30 jours
+        const salesData = {
+            dates: Array.from({length: 30}, (_, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() - 29 + i);
+                return d.toLocaleDateString('fr-FR', {day: '2-digit', month: 'short'});
+            }),
+            real: [380, 395, 410, 420, 450, 480, 460, 390, 400, 415, 430, 440, 470, 490, 470, 
+                   400, 410, 425, 435, 445, 475, 495, 480, 405, 415, 430, 440, 455, 465, 420],
+            predicted: [385, 390, 405, 425, 445, 475, 465, 395, 405, 410, 435, 445, 465, 485, 475,
+                        405, 415, 420, 440, 450, 470, 490, 485, 410, 420, 435, 445, 450, 460, 450]
+        };
+
+        // Ventes par jour de semaine
+        const weekdayData = {
+            labels: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'],
+            values: [395, 410, 425, 440, 470, 485, 450]
+        };
+
+        // Ventes mensuelles
+        const monthlyData = {
+            labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+            values: [11500, 10800, 12500, 13200, 14100, 14800]
+        };
+
+        // Top produits
+        const topProducts = [
+            { name: 'Croissant', qty: 1500, icon: '🥐' },
+            { name: 'Baguette', qty: 1300, icon: '🥖' },
+            { name: 'Pain au Chocolat', qty: 1200, icon: '🍫' },
+            { name: 'Pain Complet', qty: 980, icon: '🍞' },
+            { name: 'Brioche', qty: 850, icon: '🥯' },
+            { name: 'Éclair', qty: 720, icon: '🍮' },
+            { name: 'Tarte aux Pommes', qty: 650, icon: '🥧' },
+            { name: 'Mille-feuille', qty: 580, icon: '🍰' }
+        ];
+
+        // Économies mensuelles
+        const savingsData = {
+            labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+            savings: [4500, 5200, 6100, 7200, 8100, 9000]
+        };
+
+        // ============================================
+        // FONCTION DE PRÉDICTION AVEC API RÉELLE
+        // ============================================
+
+        window.makePrediction = async function() {
+            const btn = document.getElementById('btn-predict');
+            const dateInput = document.getElementById('prediction-date').value;
+
+            if (!dateInput) {
+                alert('Veuillez sélectionner une date');
+                return;
+            }
+
+            // État de chargement
+            btn.innerHTML = '<span class="spinner-custom me-2"></span> Analyse en cours...';
+            btn.disabled = true;
+
+            try {
+                // Appel à l'API Flask
+                const response = await fetch('http://localhost:5000/api/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ date: dateInput })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    const predictedSales = result.sales;
+                    const safetyMargin = 0.05;
+                    const recommendedProduction = Math.round(predictedSales * (1 + safetyMargin));
+                    
+                    // Mise à jour de l'interface
+                    document.getElementById('pred-sales').textContent = predictedSales;
+                    document.getElementById('pred-production').textContent = recommendedProduction;
+                    document.getElementById('tomorrow-forecast').textContent = predictedSales;
+                    document.getElementById('recommended-prod').textContent = recommendedProduction;
+                    
+                    // Mise à jour des ventes du jour
+                    if (result.today_sales) {
+                        document.getElementById('today-sales').textContent = result.today_sales;
+                    }
+                    
+                    // Conseil personnalisé
+                    let advice = "";
+                    if (predictedSales > 500) {
+                        advice = "🚀 Forte demande prévue ! Augmentez la production de 8-10% et préparez du personnel supplémentaire.";
+                    } else if (predictedSales > 450) {
+                        advice = "📈 Bonne demande prévue. Suivez la recommandation de production avec la marge de 5%.";
+                    } else if (predictedSales > 350) {
+                        advice = "📊 Demande stable. Production recommandée = prédiction + marge 5%.";
+                    } else {
+                        advice = "📉 Demande plus faible prévue. Réduisez légèrement la production pour éviter le gaspillage.";
+                    }
+                    
+                    document.getElementById('prediction-advice').innerHTML = 
+                        `<i class="fas fa-lightbulb me-2" style="color: #2ecc71;"></i>${advice}`;
+                    
+                    document.getElementById('prediction-result').style.display = 'block';
+                    document.getElementById('prediction-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    alert('Erreur: ' + (result.error || 'Impossible de faire la prédiction'));
+                }
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur de connexion au serveur. Vérifiez que le serveur Flask est bien démarré sur http://localhost:5000');
+            } finally {
+                btn.innerHTML = '<i class="fas fa-magic me-2"></i>Prédire';
+                btn.disabled = false;
+            }
+        };
+
+        // ============================================
+        // VÉRIFICATION DE LA SANTÉ DU SERVEUR
+        // ============================================
+
+        async function checkServerHealth() {
+            const statusDiv = document.getElementById('serverStatus');
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/health');
+                const data = await response.json();
+                
+                if (data.status === 'healthy') {
+                    statusDiv.className = 'server-status online';
+                    statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Serveur connecté - Modèle LightGBM actif';
+                    console.log('✅ Serveur connecté:', data);
+                    if (data.model_loaded) {
+                        console.log('✅ Modèle LightGBM chargé et prêt');
+                    } else {
+                        console.warn('⚠️ Modèle non chargé, utilisation du fallback');
+                        statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Mode fallback actif';
+                    }
+                } else {
+                    throw new Error('Réponse santé invalide');
+                }
+            } catch (error) {
+                console.error('❌ Serveur non accessible:', error);
+                statusDiv.className = 'server-status offline';
+                statusDiv.innerHTML = '<i class="fas fa-plug"></i> Serveur déconnecté - Vérifiez Flask';
+                
+                // Afficher un message dans la console
+                console.warn('⚠️ Assurez-vous que le serveur Flask est démarré: python app.py');
+            }
+        }
+
+        // ============================================
+        // FONCTIONS UTILITAIRES
+        // ============================================
+
+        function setDefaultDate() {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('prediction-date').value = tomorrow.toISOString().split('T')[0];
+        }
+
+        // ============================================
+        // INITIALISATION DES GRAPHIQUES
+        // ============================================
+
+        function initCharts() {
+            Chart.defaults.font.family = "'Poppins', sans-serif";
+            Chart.defaults.color = '#6c757d';
+
+            // 1. Hero Chart (mini line)
+            new Chart(document.getElementById('heroChart'), {
+                type: 'line',
+                data: {
+                    labels: salesData.dates.slice(-14),
+                    datasets: [{
+                        label: 'Ventes',
+                        data: salesData.real.slice(-14),
+                        borderColor: '#e67e22',
+                        backgroundColor: 'rgba(230,126,34,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    }
+                }
+            });
+
+            // 2. Sales Evolution Chart
+            new Chart(document.getElementById('salesEvolutionChart'), {
+                type: 'line',
+                data: {
+                    labels: salesData.dates,
+                    datasets: [
+                        {
+                            label: 'Ventes Réelles',
+                            data: salesData.real,
+                            borderColor: '#e67e22',
+                            backgroundColor: 'rgba(230,126,34,0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#e67e22',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Ventes Prédites',
+                            data: salesData.predicted,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52,152,219,0.05)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#3498db',
+                            borderWidth: 2,
+                            borderDash: [5, 5]
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: { intersect: false, mode: 'index' },
+                    plugins: {
+                        legend: { position: 'top', align: 'end' },
+                        tooltip: {
+                            backgroundColor: '#1a1a2e',
+                            padding: 12,
+                            cornerRadius: 12
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // 3. Weekday Chart
+            new Chart(document.getElementById('weekdayChart'), {
+                type: 'bar',
+                data: {
+                    labels: weekdayData.labels,
+                    datasets: [{
+                        label: 'Ventes moyennes',
+                        data: weekdayData.values,
+                        backgroundColor: [
+                            'rgba(230,126,34,0.8)',
+                            'rgba(230,126,34,0.8)',
+                            'rgba(230,126,34,0.8)',
+                            'rgba(230,126,34,0.8)',
+                            'rgba(230,126,34,0.8)',
+                            'rgba(231,76,60,0.8)',
+                            'rgba(52,152,219,0.8)'
+                        ],
+                        borderRadius: 12,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 4. Monthly Chart
+            new Chart(document.getElementById('monthlyChart'), {
+                type: 'bar',
+                data: {
+                    labels: monthlyData.labels,
+                    datasets: [{
+                        label: 'Ventes totales',
+                        data: monthlyData.values,
+                        backgroundColor: 'rgba(39,174,96,0.8)',
+                        borderRadius: 12,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 5. Trend Chart
+            const trendValues = Array.from({length: 30}, (_, i) => 350 + i * 5 + Math.sin(i * 0.5) * 30);
+            new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels: salesData.dates,
+                    datasets: [
+                        {
+                            label: 'Tendance',
+                            data: trendValues,
+                            borderColor: '#9b59b6',
+                            backgroundColor: 'rgba(155,89,182,0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 0,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Saisonnalité',
+                            data: trendValues.map(v => v + Math.sin(Array.from({length: 30}, (_, i) => i * 0.8)) * 20),
+                            borderColor: '#f39c12',
+                            backgroundColor: 'transparent',
+                            tension: 0.4,
+                            pointRadius: 0,
+                            borderWidth: 2,
+                            borderDash: [5, 5]
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top', align: 'end' }
+                    },
+                    scales: {
+                        y: { grid: { color: 'rgba(0,0,0,0.05)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 6. Savings Chart
+            new Chart(document.getElementById('savingsChart'), {
+                type: 'line',
+                data: {
+                    labels: savingsData.labels,
+                    datasets: [{
+                        label: 'Économies (DH)',
+                        data: savingsData.savings,
+                        borderColor: '#27ae60',
+                        backgroundColor: 'rgba(39,174,96,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#27ae60',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 3,
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: { callback: v => v + ' DH' }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // ============================================
+        // RENDU DES PRODUITS
+        // ============================================
+
+        function renderProducts() {
+            const container = document.getElementById('products-list');
+            const maxQty = Math.max(...topProducts.map(p => p.qty));
+
+            container.innerHTML = topProducts.map((product, index) => {
+                const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : 'rank-other';
+                const percentage = (product.qty / maxQty) * 100;
+
+                return `
+                    <div class="product-rank animate-fade-in" style="animation-delay: ${index * 0.1}s">
+                        <div class="rank-number ${rankClass}">${index + 1}</div>
+                        <div class="product-info">
+                            <div class="product-name">${product.icon} ${product.name}</div>
+                            <div class="product-bar">
+                                <div class="product-bar-fill" style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+                        <div class="product-qty">${product.qty.toLocaleString()}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ============================================
+        // ANIMATIONS AU SCROLL
+        // ============================================
+
+        function initScrollAnimations() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.dashboard-card, .chart-container, .eco-card, .waste-card').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'all 0.6s ease';
+                observer.observe(el);
+            });
+        }
+
+        // ============================================
+        // INITIALISATION
+        // ============================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setDefaultDate();
+            initCharts();
+            renderProducts();
+            initScrollAnimations();
+            checkServerHealth();
+            
+            // Vérifier la santé du serveur toutes les 30 secondes
+            setInterval(checkServerHealth, 30000);
+
+            // Smooth scroll pour les liens de navigation
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+
+            // Animation des compteurs
+            function animateCounter(id, target, suffix = '') {
+                const el = document.getElementById(id);
+                let current = 0;
+                const increment = target / 50;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    el.textContent = Math.floor(current) + suffix;
+                }, 30);
+            }
+
+            // Déclencher les animations des compteurs après un délai
+            setTimeout(() => {
+                animateCounter('stat-waste', 75, '%');
+                animateCounter('stat-economy', 9, 'K');
+                animateCounter('stat-accuracy', 94, '%');
+            }, 500);
+        });
+    </script>
+</body>
+</html>
